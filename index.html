@@ -411,10 +411,9 @@
   // ══════════════════════════════════════════════
   // ✏️  把这里换成你的 Google Sheets CSV 链接
   //     File → Share → Publish to web → CSV → 复制链接
-  const SHEET_CSV_URL = 'YOUR_GOOGLE_SHEET_CSV_URL_HERE';
+  const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTOYCiHMtVQ1BuehVN5PTOm4_nrNEFAerIKrcldd0VDT4YLe1BVY3-7NHRRby3b1HyXLmBU0JLfAYZE/pub?output=csv';
 
-  // ✏️  把这里换成你的 Google Sheet 编辑链接（点「添加报告」会打开）
-  const SHEET_EDIT_URL = 'https://docs.google.com/spreadsheets';
+  const SHEET_EDIT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTOYCiHMtVQ1BuehVN5PTOm4_nrNEFAerIKrcldd0VDT4YLe1BVY3-7NHRRby3b1HyXLmBU0JLfAYZE/pub?output=csv';
   // ══════════════════════════════════════════════
 
   let allData = [];
@@ -498,25 +497,43 @@
   }
 
   function buildCard(r, i) {
-    const tags = (r.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+    const title = r['Title'] || r['title'] || '';
+    const product = r['Product'] || r['product'] || '';
+    const appliedTo = r['Applied To'] || r['applied to'] || '';
+    const type = (r['Type'] || r['type'] || 'ux').toLowerCase().replace(/\s+/g, '');
+    const insight = r['Insight'] || r['insight'] || '';
+    const date = r['Date'] || r['date'] || '';
+    const tagsRaw = r['Tags'] || r['tags'] || '';
+    const num = r['No'] || r['num'] || String(i+1);
+
+    const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
     const tagHTML = tags.map(t => `<span class="tag">${t}</span>`).join('');
-    const typeClass = `type-${r.type || 'case'}`;
-    const typeLabel = typeLabels[r.type] || r.type || '其他';
+
+    const typeKey = type.includes('ux') ? 'ux'
+      : type.includes('comp') ? 'competitive'
+      : type.includes('ind') ? 'industry'
+      : type.includes('trend') ? 'trend'
+      : type.includes('case') ? 'case'
+      : 'ux';
+
+    const typeClass = `type-${typeKey}`;
+    const typeLabel = typeLabels[typeKey] || type || '其他';
     const isFeatured = i === 0;
+    const subline = appliedTo ? `${product} → ${appliedTo}` : product;
 
     if (isFeatured) {
       return `
-        <div class="card featured" data-type="${r.type}">
+        <div class="card featured" data-type="${typeKey}">
           <div class="featured-left">
             <div class="card-top">
               <span class="type-badge ${typeClass}">${typeLabel}</span>
-              <span class="card-num">#${r.num || String(i+1).padStart(3,'0')}</span>
+              <span class="card-num">#${String(num).padStart(3,'0')}</span>
             </div>
-            <div class="card-title">${r.title}</div>
-            <p class="card-product">${r.product || ''}</p>
-            <p class="card-insight">${r.insight || ''}</p>
+            <div class="card-title">${title}</div>
+            <p class="card-product">${subline}</p>
+            <p class="card-insight">${insight}</p>
             <div class="card-footer">
-              <span class="card-date">${r.date || ''}</span>
+              <span class="card-date">${date}</span>
               <div style="display:flex;align-items:center;gap:8px;">
                 <div class="card-tags">${tagHTML}</div>
                 <span class="card-arrow">→</span>
@@ -530,16 +547,16 @@
     }
 
     return `
-      <div class="card" data-type="${r.type}">
+      <div class="card" data-type="${typeKey}">
         <div class="card-top">
           <span class="type-badge ${typeClass}">${typeLabel}</span>
-          <span class="card-num">#${r.num || String(i+1).padStart(3,'0')}</span>
+          <span class="card-num">#${String(num).padStart(3,'0')}</span>
         </div>
-        <div class="card-title">${r.title}</div>
-        <p class="card-product">${r.product || ''}</p>
-        <p class="card-insight">${r.insight || ''}</p>
+        <div class="card-title">${title}</div>
+        <p class="card-product">${subline}</p>
+        <p class="card-insight">${insight}</p>
         <div class="card-footer">
-          <span class="card-date">${r.date || ''}</span>
+          <span class="card-date">${date}</span>
           <div style="display:flex;align-items:center;gap:8px;">
             <div class="card-tags">${tagHTML}</div>
             <span class="card-arrow">→</span>
